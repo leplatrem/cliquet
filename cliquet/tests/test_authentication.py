@@ -176,5 +176,5 @@ class Oauth2AuthenticationPolicyTest(unittest.TestCase):
         self.policy.unauthenticated_userid(self.request)
         principals = self.policy.effective_principals(self.request)
         self.assertEqual(sorted(principals),
-                         ['fxa_33', 'profile',
+                         ['fxa_33', 'scope:profile',
                           security.Authenticated, security.Everyone])

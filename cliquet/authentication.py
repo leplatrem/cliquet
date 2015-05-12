@@ -71,6 +71,7 @@ class TokenVerificationCache(object):
 class Oauth2AuthenticationPolicy(base_auth.CallbackAuthenticationPolicy):
     def __init__(self, config, realm='Realm'):
         self.realm = realm
+        self.principals_prefix = 'scope:'
 
         settings = config.get_settings()
         oauth_cache_ttl = float(settings['fxa-oauth.cache_ttl_seconds'])
@@ -98,8 +99,9 @@ class Oauth2AuthenticationPolicy(base_auth.CallbackAuthenticationPolicy):
 
         # unauthenticated_userid() is always called before this.
         scopes = getattr(request, '_fxa_scopes', [])
+        prefixed_scopes = [(self.principals_prefix + s) for s in scopes]
 
-        return principals + scopes
+        return principals + prefixed_scopes
 
     def forget(self, request):
         """A no-op. Credentials are sent on every request.
