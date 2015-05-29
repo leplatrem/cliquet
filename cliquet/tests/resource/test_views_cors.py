@@ -1,5 +1,4 @@
 import mock
-import cliquet
 from .test_views import BaseWebTest, FakeAuthentMixin
 
 

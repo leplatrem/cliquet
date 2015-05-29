@@ -2,26 +2,30 @@
 """
 import warnings
 import pkg_resources
-import structlog
 
+import structlog
 from cornice import Service
 from pyramid.settings import asbool, aslist
 
 # Main Cliquet logger.
 logger = structlog.get_logger()
 
-from cliquet import utils
-from cliquet.initialization import (  # NOQA
-    initialize, initialize_cliquet, install_middlewares)
-from cliquet import resource
 from cliquet import logger
+from cliquet.resource import Resource
+from cliquet.schema import Schema
+from cliquet import utils
+from cliquet.initialization import (
+    initialize, initialize_cliquet, install_middlewares)
+
+__all__ = ['API_VERSION', '__version__', 'Resource', 'Schema',
+           'DEFAULT_SETTINGS', 'initialize', 'initialize_cliquet',
+           'includeme', 'install_middlewares', 'load_default_settings']
 
 # Module version, as defined in PEP-0396.
 __version__ = pkg_resources.get_distribution(__package__).version
 
 # The API version is derivated from the module version.
 API_VERSION = 'v%s' % __version__.split('.')[0]
-
 
 DEFAULT_SETTINGS = {
     'cliquet.backoff': None,
