@@ -173,6 +173,13 @@ def setup_cache(config):
     config.registry.heartbeats['cache'] = config.registry.cache.ping
 
 
+def setup_keyvalue(config):
+    settings = config.get_settings()
+    keyvalue = config.maybe_dotted(settings['cliquet.keyvalue_backend'])
+    config.registry.keyvalue = keyvalue.load_from_config(config)
+    config.registry.heartbeats['keyvalue'] = config.registry.keyvalue.ping
+
+
 def setup_statsd(config):
     settings = config.get_settings()
 

@@ -41,6 +41,7 @@ DEFAULT_SETTINGS = {
         'cliquet.initialization.setup_logging',
         'cliquet.initialization.setup_storage',
         'cliquet.initialization.setup_cache',
+        'cliquet.initialization.setup_keyvalue',
         'cliquet.initialization.setup_requests_scheme',
         'cliquet.initialization.setup_version_redirection',
         'cliquet.initialization.setup_deprecation',
@@ -48,6 +49,7 @@ DEFAULT_SETTINGS = {
         'cliquet.initialization.setup_backoff',
         'cliquet.initialization.setup_statsd'
     ),
+    'cliquet.keyvalue_backend': 'cliquet.storage.keyvalue',
     'cliquet.logging_renderer': 'cliquet.logs.ClassicLogRenderer',
     'cliquet.newrelic_config': None,
     'cliquet.newrelic_env': 'dev',
