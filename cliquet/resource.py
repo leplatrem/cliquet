@@ -995,7 +995,8 @@ class BaseResource(object):
 class ProtectedResource(BaseResource):
     permissions = ('read', 'write')
 
-    def _store_permissions(self, object_id, replace=False):
+    def _save_permissions(self, object_id, permissions,
+                          author=None, replace=False):
         """Go through the permissions from request body, and store them
         for the specified `object_id`.
 
@@ -1003,26 +1004,20 @@ class ProtectedResource(BaseResource):
             erased.
         :returns: the resulting mapping of permissions.
         """
-        permissions = self.request.validated.get('permissions')
-
-        add_write_perm = (self.request.method.lower() in ('put', 'post'))
-
-        # Do nothing if not specified in request body.
+        # Fetch existing if not specified in request body.
         if not permissions:
             permissions = self._build_permissions(object_id)
 
-        if add_write_perm:
-            write_principals = permissions.setdefault('write', [])
-            user_principal = self.request.authenticated_userid
-            if user_principal not in write_principals:
-                write_principals.insert(0, user_principal)
+        if author:
+            # Add author among 'write' principals.
+            permissions.setdefault('write', []).append(author)
+
+        registry = self.request.registry
+        add_principal = registry.permission.add_principal_to_ace
 
         if replace:
             # XXX: add replace method to permissions API.
             self._delete_permissions(object_id)
-
-        registry = self.request.registry
-        add_principal = registry.permission.add_principal_to_ace
 
         for permission, principals in permissions.items():
             for principal in principals:
@@ -1073,9 +1068,14 @@ class ProtectedResource(BaseResource):
 
         record_id = result['data'][self.collection.id_field]
         record_uri = self._record_uri_from_collection(record_id)
-
         object_id = authorization.get_object_id(record_uri)
-        result['permissions'] = self._store_permissions(object_id=object_id)
+
+        author = self.request.authenticated_userid
+        permissions = self.request.validated.get('permissions')
+        allperms = self._store_permissions(object_id=object_id,
+                                           permissions=permissions,
+                                           author=author)
+        result['permissions'] = allperms
         return result
 
     def collection_delete(self):
@@ -1104,22 +1104,26 @@ class ProtectedResource(BaseResource):
     def put(self):
         result = super(ProtectedResource, self).put()
 
-        object_id = authorization.get_object_id(self.request.path)
-        self._store_permissions(object_id=object_id, replace=True)
-        result['permissions'] = self._build_permissions(object_id=object_id)
+        author = self.request.authenticated_userid
+        permissions = self.request.validated.get('permissions')
+        allperms = self._store_permissions(object_id=object_id,
+                                           permissions=permissions,
+                                           author=author,
+                                           replace=True)
+        result['permissions'] = allperms
         return result
 
     def patch(self):
         result = super(ProtectedResource, self).patch()
 
-        object_id = authorization.get_object_id(self.request.path)
-        self._store_permissions(object_id=object_id)
-        result['permissions'] = self._build_permissions(object_id=object_id)
+        permissions = self.request.validated.get('permissions')
+        allperms = self._store_permissions(object_id=self.context.object_id,
+                                           permissions=permissions)
+        result['permissions'] = allperms
         return result
 
     def delete(self):
         result = super(ProtectedResource, self).delete()
 
-        object_id = authorization.get_object_id(self.request.path)
-        self._delete_permissions(object_id=object_id)
+        self._delete_permissions(object_id=self.context.object_id)
         return result
